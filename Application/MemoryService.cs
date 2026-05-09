@@ -6,19 +6,23 @@ namespace AiAgent.Application;
 public sealed class MemoryService
 {
     private readonly MemoryRepository _repository;
+    private readonly MarkdownMemoryExporter _markdownExporter;
 
     public MemoryService()
     {
         _repository = new MemoryRepository();
+        _markdownExporter = new MarkdownMemoryExporter();
     }
 
-    public void Add(TaskMemory memory)
+    public string Add(TaskMemory memory)
     {
         var memories = _repository.Load();
 
         memories.Add(memory);
 
         _repository.Save(memories);
+
+        return _markdownExporter.Export(memory);
     }
 
     public IReadOnlyCollection<TaskMemory> List()
@@ -66,6 +70,11 @@ public sealed class MemoryService
     public string GetStorageFilePath()
     {
         return _repository.GetStorageFilePath();
+    }
+
+    public string GetMarkdownDirectoryPath()
+    {
+        return _repository.GetMarkdownDirectoryPath();
     }
 
     private static bool Contains(string value, string query)

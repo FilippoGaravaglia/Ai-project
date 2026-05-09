@@ -33,6 +33,10 @@ switch (command)
         ShowStoragePath(service);
         break;
 
+    case "markdown":
+        ShowMarkdownDirectory(service);
+        break;
+
     case "help":
     case "--help":
     case "-h":
@@ -66,11 +70,12 @@ static void AddMemory(MemoryService service)
         LessonsLearned = AskOptional("Lessons learned")
     };
 
-    service.Add(memory);
+    var markdownFilePath = service.Add(memory);
 
     Console.WriteLine();
     Console.WriteLine("Memory saved successfully.");
     Console.WriteLine($"Id: {memory.Id}");
+    Console.WriteLine($"Markdown: {markdownFilePath}");
 }
 
 static void ListMemories(MemoryService service)
@@ -254,6 +259,11 @@ static void ShowStoragePath(MemoryService service)
     Console.WriteLine(service.GetStorageFilePath());
 }
 
+static void ShowMarkdownDirectory(MemoryService service)
+{
+    Console.WriteLine(service.GetMarkdownDirectoryPath());
+}
+
 static void PrintHelp()
 {
     Console.WriteLine("DevMemory - Local Developer Memory");
@@ -265,6 +275,7 @@ static void PrintHelp()
     Console.WriteLine("  dotnet run -- search <query>");
     Console.WriteLine("  dotnet run -- show <memory-id>");
     Console.WriteLine("  dotnet run -- storage");
+    Console.WriteLine("  dotnet run -- markdown");
     Console.WriteLine();
     Console.WriteLine("Examples:");
     Console.WriteLine("  dotnet run -- add");
@@ -272,4 +283,5 @@ static void PrintHelp()
     Console.WriteLine("  dotnet run -- search revision");
     Console.WriteLine("  dotnet run -- show bde69543-a200-47b8-b61b-9d334511baa9");
     Console.WriteLine("  dotnet run -- storage");
+    Console.WriteLine("  dotnet run -- markdown");
 }

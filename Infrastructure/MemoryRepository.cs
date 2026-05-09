@@ -53,9 +53,15 @@ public sealed class MemoryRepository
         return _options.StorageFilePath;
     }
 
+    public string GetMarkdownDirectoryPath()
+    {
+        return _options.MarkdownDirectoryPath;
+    }
+
     private void EnsureStorageExists()
     {
         Directory.CreateDirectory(_options.StorageDirectory);
+        Directory.CreateDirectory(_options.MarkdownDirectoryPath);
 
         if (!File.Exists(_options.StorageFilePath))
         {

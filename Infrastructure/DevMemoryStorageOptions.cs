@@ -8,5 +8,9 @@ public sealed class DevMemoryStorageOptions
 
     public string StorageFileName { get; init; } = "devmemory.json";
 
+    public string MarkdownDirectoryName { get; init; } = "markdown";
+
     public string StorageFilePath => Path.Combine(StorageDirectory, StorageFileName);
+
+    public string MarkdownDirectoryPath => Path.Combine(StorageDirectory, MarkdownDirectoryName);
 }
