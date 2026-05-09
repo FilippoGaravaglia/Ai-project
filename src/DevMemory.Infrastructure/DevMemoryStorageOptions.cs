@@ -8,9 +8,15 @@ public sealed class DevMemoryStorageOptions
 
     public string MarkdownDirectoryName { get; init; } = "markdown";
 
+    public string GraphDirectoryName { get; init; } = "graph";
+
     public string StorageFilePath => Path.Combine(StorageDirectory, StorageFileName);
 
     public string MarkdownDirectoryPath => Path.Combine(StorageDirectory, MarkdownDirectoryName);
+
+    public string GraphDirectoryPath => Path.Combine(StorageDirectory, GraphDirectoryName);
+
+    public string DefaultGraphFilePath => Path.Combine(GraphDirectoryPath, "devmemory-graph.json");
 
     private static string ResolveStorageDirectory()
     {

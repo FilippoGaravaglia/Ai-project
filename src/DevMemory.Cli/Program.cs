@@ -3,12 +3,15 @@ using DevMemory.Application.Models;
 using DevMemory.Core;
 using DevMemory.Infrastructure;
 using DevMemory.Infrastructure.Git;
+using DevMemory.Infrastructure.Graph;
 
 var repository = new MemoryRepository();
 var markdownExporter = new MarkdownMemoryExporter();
 var service = new MemoryService(repository, markdownExporter);
 var gitInspector = new GitRepositoryInspector();
 var gitMemoryDraftService = new GitMemoryDraftService(gitInspector);
+var graphExporter = new JsonMemoryGraphExporter();
+var memoryGraphService = new MemoryGraphService(repository, graphExporter);
 
 if (args.Length == 0)
 {
@@ -30,6 +33,7 @@ try
         "markdown" => ShowMarkdownDirectory(service),
         "git-status" => ShowGitStatus(gitInspector, args),
         "learn-from-git" => LearnFromGit(service, gitMemoryDraftService, args),
+        "graph-export" => ExportGraph(memoryGraphService, args),
         "help" or "--help" or "-h" => PrintHelpAndReturnSuccess(),
         _ => HandleUnknownCommand(command)
     };
@@ -538,6 +542,35 @@ static List<string> AskMultilineListWithDefaults(string label, IReadOnlyCollecti
     return AskMultilineList(label);
 }
 
+static int ExportGraph(MemoryGraphService memoryGraphService, string[] args)
+{
+    var outputPath = ReadOutputOption(args);
+
+    var result = memoryGraphService.ExportGraph(outputPath);
+
+    Console.WriteLine("Graph exported successfully.");
+    Console.WriteLine($"Path: {result.FilePath}");
+    Console.WriteLine($"Nodes: {result.NodesCount}");
+    Console.WriteLine($"Edges: {result.EdgesCount}");
+
+    return 0;
+}
+
+static string? ReadOutputOption(string[] args)
+{
+    for (var index = 1; index < args.Length; index++)
+    {
+        var value = args[index];
+
+        if (value.Equals("--output", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReadOptionValue(args, ref index, "--output");
+        }
+    }
+
+    return null;
+}
+
 static void PrintHelp()
 {
     Console.WriteLine("DevMemory - Local Developer Memory");
@@ -552,6 +585,7 @@ static void PrintHelp()
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- markdown");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- git-status [--path <repository-path>]");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- learn-from-git [--path <repository-path>]");
+    Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- graph-export [--output <file-path>]");
     Console.WriteLine();
     Console.WriteLine("Installed tool usage:");
     Console.WriteLine("  devmemory add");
@@ -562,6 +596,7 @@ static void PrintHelp()
     Console.WriteLine("  devmemory markdown");
     Console.WriteLine("  devmemory git-status [--path <repository-path>]");
     Console.WriteLine("  devmemory learn-from-git [--path <repository-path>]");
+    Console.WriteLine("  devmemory graph-export [--output <file-path>]");
     Console.WriteLine();
     Console.WriteLine("Examples:");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- search revision");
@@ -572,6 +607,8 @@ static void PrintHelp()
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- git-status --path ~/work/LogicalCommon");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- learn-from-git");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- learn-from-git --path ~/work/LogicalCommon");
+    Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- graph-export");
+    Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- graph-export --output ~/devmemory-graph.json");
     Console.WriteLine();
     Console.WriteLine("Installed tool examples:");
     Console.WriteLine("  devmemory search revision");
@@ -579,6 +616,8 @@ static void PrintHelp()
     Console.WriteLine("  devmemory git-status --path ~/work/LogicalCommon");
     Console.WriteLine("  devmemory learn-from-git");
     Console.WriteLine("  devmemory learn-from-git --path ~/work/LogicalCommon");
+    Console.WriteLine("  devmemory graph-export");
+    Console.WriteLine("  devmemory graph-export --output ~/devmemory-graph.json");
     Console.WriteLine();
     Console.WriteLine("Environment variables:");
     Console.WriteLine("  DEVMEMORY_HOME  Custom DevMemory storage directory");
