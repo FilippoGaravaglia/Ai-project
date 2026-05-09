@@ -28,7 +28,10 @@ public sealed class MemoryGraphServiceTests
 
         var exporter = new InMemoryGraphExporter();
 
-        var service = new MemoryGraphService(repository, exporter);
+        var service = new MemoryGraphService(
+            repository,
+            exporter,
+            new InMemoryGraphHtmlExporter());
 
         // Act
         var result = service.ExportGraph();
@@ -52,6 +55,41 @@ public sealed class MemoryGraphServiceTests
             edge.SourceId == "memory:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" &&
             edge.TargetId == "tag:dotnet" &&
             edge.Type == "has_tag");
+    }
+
+    [Fact]
+    public void ExportGraphView_WhenMemoriesExist_ExportsHtmlGraph()
+    {
+        // Arrange
+        var repository = new InMemoryRepository
+        {
+            Memories =
+            [
+                new TaskMemory
+                {
+                    Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                    Title = "Create graph view",
+                    Project = "DevMemory",
+                    Area = "Graph",
+                    Tags = ["html", "graph"]
+                }
+            ]
+        };
+
+        var htmlExporter = new InMemoryGraphHtmlExporter();
+
+        var service = new MemoryGraphService(
+            repository,
+            new InMemoryGraphExporter(),
+            htmlExporter);
+
+        // Act
+        var result = service.ExportGraphView();
+
+        // Assert
+        Assert.Equal("/fake/path/devmemory-graph.html", result.FilePath);
+        Assert.NotNull(htmlExporter.ExportedGraph);
+        Assert.Contains(htmlExporter.ExportedGraph.Nodes, node => node.Id == "project:devmemory");
     }
 
     private sealed class InMemoryRepository : IMemoryRepository
@@ -86,6 +124,17 @@ public sealed class MemoryGraphServiceTests
         {
             ExportedGraph = graph;
             return outputPath ?? "/fake/path/devmemory-graph.json";
+        }
+    }
+
+    private sealed class InMemoryGraphHtmlExporter : IMemoryGraphHtmlExporter
+    {
+        public MemoryGraph? ExportedGraph { get; private set; }
+
+        public string Export(MemoryGraph graph, string? outputPath = null)
+        {
+            ExportedGraph = graph;
+            return outputPath ?? "/fake/path/devmemory-graph.html";
         }
     }
 }

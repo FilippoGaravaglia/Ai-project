@@ -8,22 +8,35 @@ public sealed class MemoryGraphService
 {
     private readonly IMemoryRepository _repository;
     private readonly IMemoryGraphExporter _graphExporter;
+    private readonly IMemoryGraphHtmlExporter _graphHtmlExporter;
 
     public MemoryGraphService(
         IMemoryRepository repository,
-        IMemoryGraphExporter graphExporter)
+        IMemoryGraphExporter graphExporter,
+        IMemoryGraphHtmlExporter graphHtmlExporter)
     {
         _repository = repository;
         _graphExporter = graphExporter;
+        _graphHtmlExporter = graphHtmlExporter;
     }
 
     public MemoryGraphExportResult ExportGraph(string? outputPath = null)
     {
-        var memories = _repository.Load();
-
-        var graph = BuildGraph(memories);
-
+        var graph = BuildGraph(_repository.Load());
         var filePath = _graphExporter.Export(graph, outputPath);
+
+        return new MemoryGraphExportResult
+        {
+            FilePath = filePath,
+            NodesCount = graph.Nodes.Count,
+            EdgesCount = graph.Edges.Count
+        };
+    }
+
+    public MemoryGraphExportResult ExportGraphView(string? outputPath = null)
+    {
+        var graph = BuildGraph(_repository.Load());
+        var filePath = _graphHtmlExporter.Export(graph, outputPath);
 
         return new MemoryGraphExportResult
         {
@@ -36,7 +49,7 @@ public sealed class MemoryGraphService
     private static MemoryGraph BuildGraph(IReadOnlyCollection<TaskMemory> memories)
     {
         var nodes = new Dictionary<string, MemoryGraphNode>(StringComparer.OrdinalIgnoreCase);
-        var edges = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var edgeKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var graphEdges = new List<MemoryGraphEdge>();
 
         foreach (var memory in memories)
@@ -49,28 +62,28 @@ public sealed class MemoryGraphService
             {
                 var projectNodeId = BuildTypedNodeId("project", memory.Project);
                 AddNode(nodes, projectNodeId, memory.Project, "project");
-                AddEdge(edges, graphEdges, memoryNodeId, projectNodeId, "belongs_to_project");
+                AddEdge(edgeKeys, graphEdges, memoryNodeId, projectNodeId, "belongs_to_project");
             }
 
             if (!string.IsNullOrWhiteSpace(memory.Area))
             {
                 var areaNodeId = BuildTypedNodeId("area", memory.Area);
                 AddNode(nodes, areaNodeId, memory.Area, "area");
-                AddEdge(edges, graphEdges, memoryNodeId, areaNodeId, "belongs_to_area");
+                AddEdge(edgeKeys, graphEdges, memoryNodeId, areaNodeId, "belongs_to_area");
             }
 
             foreach (var tag in memory.Tags.Where(value => !string.IsNullOrWhiteSpace(value)))
             {
                 var tagNodeId = BuildTypedNodeId("tag", tag);
                 AddNode(nodes, tagNodeId, tag, "tag");
-                AddEdge(edges, graphEdges, memoryNodeId, tagNodeId, "has_tag");
+                AddEdge(edgeKeys, graphEdges, memoryNodeId, tagNodeId, "has_tag");
             }
 
             foreach (var file in memory.FilesTouched.Where(value => !string.IsNullOrWhiteSpace(value)))
             {
                 var fileNodeId = BuildTypedNodeId("file", file);
                 AddNode(nodes, fileNodeId, file, "file");
-                AddEdge(edges, graphEdges, memoryNodeId, fileNodeId, "touches_file");
+                AddEdge(edgeKeys, graphEdges, memoryNodeId, fileNodeId, "touches_file");
             }
         }
 

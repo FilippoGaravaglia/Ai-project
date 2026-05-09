@@ -14,11 +14,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute(("Local-first developer memory CLI for storing, searching and exporting engineering" +
     " task knowledge."))]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("0.1.2.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.1.2+1a0605f4915070e57662700f0fe237795545b6dd")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("0.1.3.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.1.3+25bb03619d5a582e4767cf96c257359fdc4a28b6")]
 [assembly: System.Reflection.AssemblyProductAttribute("DevMemory.Cli")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DevMemory.Cli")]
-[assembly: System.Reflection.AssemblyVersionAttribute("0.1.2.0")]
+[assembly: System.Reflection.AssemblyVersionAttribute("0.1.3.0")]
 
 // Generato dalla classe WriteCodeFragment di MSBuild.
 

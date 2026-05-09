@@ -18,6 +18,8 @@ public sealed class DevMemoryStorageOptions
 
     public string DefaultGraphFilePath => Path.Combine(GraphDirectoryPath, "devmemory-graph.json");
 
+    public string DefaultGraphHtmlFilePath => Path.Combine(GraphDirectoryPath, "devmemory-graph.html");
+
     private static string ResolveStorageDirectory()
     {
         var configuredPath = Environment.GetEnvironmentVariable(DevMemoryEnvironmentVariables.Home);

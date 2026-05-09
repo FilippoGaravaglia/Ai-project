@@ -8,10 +8,13 @@ using DevMemory.Infrastructure.Graph;
 var repository = new MemoryRepository();
 var markdownExporter = new MarkdownMemoryExporter();
 var service = new MemoryService(repository, markdownExporter);
+
 var gitInspector = new GitRepositoryInspector();
 var gitMemoryDraftService = new GitMemoryDraftService(gitInspector);
+
 var graphExporter = new JsonMemoryGraphExporter();
-var memoryGraphService = new MemoryGraphService(repository, graphExporter);
+var graphHtmlExporter = new HtmlMemoryGraphExporter();
+var memoryGraphService = new MemoryGraphService(repository, graphExporter, graphHtmlExporter);
 
 if (args.Length == 0)
 {
@@ -34,9 +37,15 @@ try
         "git-status" => ShowGitStatus(gitInspector, args),
         "learn-from-git" => LearnFromGit(service, gitMemoryDraftService, args),
         "graph-export" => ExportGraph(memoryGraphService, args),
+        "graph-view" => ExportGraphView(memoryGraphService, args),
         "help" or "--help" or "-h" => PrintHelpAndReturnSuccess(),
         _ => HandleUnknownCommand(command)
     };
+}
+catch (ArgumentException ex)
+{
+    Console.Error.WriteLine(ex.Message);
+    return 2;
 }
 catch (Exception ex)
 {
@@ -181,186 +190,6 @@ static int ShowMarkdownDirectory(MemoryService service)
     return 0;
 }
 
-static int HandleUnknownCommand(string command)
-{
-    Console.Error.WriteLine($"Unknown command: {command}");
-    Console.Error.WriteLine();
-    PrintHelp();
-    return 2;
-}
-
-static int PrintHelpAndReturnSuccess()
-{
-    PrintHelp();
-    return 0;
-}
-
-static MemorySearchOptions BuildSearchOptions(string[] args)
-{
-    var queryParts = new List<string>();
-    string? project = null;
-    string? area = null;
-    string? tag = null;
-
-    for (var index = 1; index < args.Length; index++)
-    {
-        var value = args[index];
-
-        if (value.Equals("--project", StringComparison.OrdinalIgnoreCase))
-        {
-            project = ReadOptionValue(args, ref index, "--project");
-            continue;
-        }
-
-        if (value.Equals("--area", StringComparison.OrdinalIgnoreCase))
-        {
-            area = ReadOptionValue(args, ref index, "--area");
-            continue;
-        }
-
-        if (value.Equals("--tag", StringComparison.OrdinalIgnoreCase))
-        {
-            tag = ReadOptionValue(args, ref index, "--tag");
-            continue;
-        }
-
-        queryParts.Add(value);
-    }
-
-    return new MemorySearchOptions
-    {
-        Query = string.Join(' ', queryParts),
-        Project = project,
-        Area = area,
-        Tag = tag
-    };
-}
-
-static string? ReadOptionValue(string[] args, ref int index, string optionName)
-{
-    if (index + 1 >= args.Length)
-    {
-        throw new ArgumentException($"Option {optionName} requires a value.");
-    }
-
-    var value = args[++index];
-
-    if (value.StartsWith("--", StringComparison.Ordinal))
-    {
-        throw new ArgumentException($"Option {optionName} requires a value.");
-    }
-
-    return value;
-}
-
-static void PrintMemoryDetails(TaskMemory memory)
-{
-    Console.WriteLine();
-    Console.WriteLine($"# {memory.Title}");
-    Console.WriteLine();
-
-    Console.WriteLine($"Id: {memory.Id}");
-    Console.WriteLine($"Project: {memory.Project}");
-    Console.WriteLine($"Area: {memory.Area}");
-    Console.WriteLine($"Branch: {memory.Branch}");
-    Console.WriteLine($"Created at: {memory.CreatedAt:u}");
-    Console.WriteLine($"Tags: {string.Join(", ", memory.Tags)}");
-    Console.WriteLine();
-
-    Console.WriteLine("## Problem");
-    Console.WriteLine(memory.Problem);
-    Console.WriteLine();
-
-    Console.WriteLine("## Solution");
-    Console.WriteLine(memory.Solution);
-    Console.WriteLine();
-
-    PrintList("## Decisions", memory.Decisions);
-    PrintList("## Files touched", memory.FilesTouched);
-    PrintList("## Tests", memory.Tests);
-
-    Console.WriteLine("## Lessons learned");
-    Console.WriteLine(string.IsNullOrWhiteSpace(memory.LessonsLearned) ? "-" : memory.LessonsLearned);
-}
-
-static string AskRequired(string label)
-{
-    while (true)
-    {
-        Console.Write($"{label}: ");
-        var value = Console.ReadLine();
-
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            return value.Trim();
-        }
-
-        Console.WriteLine($"{label} is required.");
-    }
-}
-
-static string AskOptional(string label)
-{
-    Console.Write($"{label}: ");
-    return Console.ReadLine()?.Trim() ?? string.Empty;
-}
-
-static List<string> AskList(string label)
-{
-    Console.Write($"{label}: ");
-    var value = Console.ReadLine();
-
-    if (string.IsNullOrWhiteSpace(value))
-    {
-        return [];
-    }
-
-    return value
-        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-        .ToList();
-}
-
-static List<string> AskMultilineList(string label)
-{
-    Console.WriteLine($"{label} - write one item per line. Leave empty line to finish.");
-
-    var values = new List<string>();
-
-    while (true)
-    {
-        Console.Write("- ");
-        var value = Console.ReadLine();
-
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            break;
-        }
-
-        values.Add(value.Trim());
-    }
-
-    return values;
-}
-
-static void PrintList(string title, IReadOnlyCollection<string> values)
-{
-    Console.WriteLine(title);
-
-    if (!values.Any())
-    {
-        Console.WriteLine("-");
-        Console.WriteLine();
-        return;
-    }
-
-    foreach (var value in values)
-    {
-        Console.WriteLine($"- {value}");
-    }
-
-    Console.WriteLine();
-}
-
 static int ShowGitStatus(GitRepositoryInspector gitInspector, string[] args)
 {
     var repositoryPath = ReadPathOption(args) ?? Directory.GetCurrentDirectory();
@@ -386,32 +215,6 @@ static int ShowGitStatus(GitRepositoryInspector gitInspector, string[] args)
     }
 
     return 0;
-}
-
-static string? ReadPathOption(string[] args)
-{
-    for (var index = 1; index < args.Length; index++)
-    {
-        var value = args[index];
-
-        if (value.Equals("--path", StringComparison.OrdinalIgnoreCase))
-        {
-            return ReadOptionValue(args, ref index, "--path");
-        }
-    }
-
-    return null;
-}
-
-static string FormatLastCommit(DevMemory.Application.Models.GitRepositorySnapshot snapshot)
-{
-    if (string.IsNullOrWhiteSpace(snapshot.LastCommitHash) &&
-        string.IsNullOrWhiteSpace(snapshot.LastCommitMessage))
-    {
-        return "-";
-    }
-
-    return $"{snapshot.LastCommitHash} - {snapshot.LastCommitMessage}";
 }
 
 static int LearnFromGit(
@@ -486,6 +289,193 @@ static int LearnFromGit(
     return 0;
 }
 
+static int ExportGraph(MemoryGraphService memoryGraphService, string[] args)
+{
+    var outputPath = ReadOutputOption(args);
+
+    var result = memoryGraphService.ExportGraph(outputPath);
+
+    Console.WriteLine("Graph exported successfully.");
+    Console.WriteLine($"Path: {result.FilePath}");
+    Console.WriteLine($"Nodes: {result.NodesCount}");
+    Console.WriteLine($"Edges: {result.EdgesCount}");
+
+    return 0;
+}
+
+static int ExportGraphView(MemoryGraphService memoryGraphService, string[] args)
+{
+    var outputPath = ReadOutputOption(args);
+
+    var result = memoryGraphService.ExportGraphView(outputPath);
+
+    Console.WriteLine("Graph view generated successfully.");
+    Console.WriteLine($"Path: {result.FilePath}");
+    Console.WriteLine($"Nodes: {result.NodesCount}");
+    Console.WriteLine($"Edges: {result.EdgesCount}");
+
+    return 0;
+}
+
+static int HandleUnknownCommand(string command)
+{
+    Console.Error.WriteLine($"Unknown command: {command}");
+    Console.Error.WriteLine();
+    PrintHelp();
+    return 2;
+}
+
+static int PrintHelpAndReturnSuccess()
+{
+    PrintHelp();
+    return 0;
+}
+
+static MemorySearchOptions BuildSearchOptions(string[] args)
+{
+    var queryParts = new List<string>();
+    string? project = null;
+    string? area = null;
+    string? tag = null;
+
+    for (var index = 1; index < args.Length; index++)
+    {
+        var value = args[index];
+
+        if (value.Equals("--project", StringComparison.OrdinalIgnoreCase))
+        {
+            project = ReadOptionValue(args, ref index, "--project");
+            continue;
+        }
+
+        if (value.Equals("--area", StringComparison.OrdinalIgnoreCase))
+        {
+            area = ReadOptionValue(args, ref index, "--area");
+            continue;
+        }
+
+        if (value.Equals("--tag", StringComparison.OrdinalIgnoreCase))
+        {
+            tag = ReadOptionValue(args, ref index, "--tag");
+            continue;
+        }
+
+        queryParts.Add(value);
+    }
+
+    return new MemorySearchOptions
+    {
+        Query = string.Join(' ', queryParts),
+        Project = project,
+        Area = area,
+        Tag = tag
+    };
+}
+
+static string? ReadPathOption(string[] args)
+{
+    for (var index = 1; index < args.Length; index++)
+    {
+        var value = args[index];
+
+        if (value.Equals("--path", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReadOptionValue(args, ref index, "--path");
+        }
+    }
+
+    return null;
+}
+
+static string? ReadOutputOption(string[] args)
+{
+    for (var index = 1; index < args.Length; index++)
+    {
+        var value = args[index];
+
+        if (value.Equals("--output", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReadOptionValue(args, ref index, "--output");
+        }
+    }
+
+    return null;
+}
+
+static string? ReadOptionValue(string[] args, ref int index, string optionName)
+{
+    if (index + 1 >= args.Length)
+    {
+        throw new ArgumentException($"Option {optionName} requires a value.");
+    }
+
+    var value = args[++index];
+
+    if (value.StartsWith("--", StringComparison.Ordinal))
+    {
+        throw new ArgumentException($"Option {optionName} requires a value.");
+    }
+
+    return value;
+}
+
+static string FormatLastCommit(GitRepositorySnapshot snapshot)
+{
+    if (string.IsNullOrWhiteSpace(snapshot.LastCommitHash) &&
+        string.IsNullOrWhiteSpace(snapshot.LastCommitMessage))
+    {
+        return "-";
+    }
+
+    return $"{snapshot.LastCommitHash} - {snapshot.LastCommitMessage}";
+}
+
+static void PrintMemoryDetails(TaskMemory memory)
+{
+    Console.WriteLine();
+    Console.WriteLine($"# {memory.Title}");
+    Console.WriteLine();
+
+    Console.WriteLine($"Id: {memory.Id}");
+    Console.WriteLine($"Project: {memory.Project}");
+    Console.WriteLine($"Area: {memory.Area}");
+    Console.WriteLine($"Branch: {memory.Branch}");
+    Console.WriteLine($"Created at: {memory.CreatedAt:u}");
+    Console.WriteLine($"Tags: {string.Join(", ", memory.Tags)}");
+    Console.WriteLine();
+
+    Console.WriteLine("## Problem");
+    Console.WriteLine(memory.Problem);
+    Console.WriteLine();
+
+    Console.WriteLine("## Solution");
+    Console.WriteLine(memory.Solution);
+    Console.WriteLine();
+
+    PrintList("## Decisions", memory.Decisions);
+    PrintList("## Files touched", memory.FilesTouched);
+    PrintList("## Tests", memory.Tests);
+
+    Console.WriteLine("## Lessons learned");
+    Console.WriteLine(string.IsNullOrWhiteSpace(memory.LessonsLearned) ? "-" : memory.LessonsLearned);
+}
+
+static string AskRequired(string label)
+{
+    while (true)
+    {
+        Console.Write($"{label}: ");
+        var value = Console.ReadLine();
+
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            return value.Trim();
+        }
+
+        Console.WriteLine($"{label} is required.");
+    }
+}
+
 static string AskRequiredWithDefault(string label, string defaultValue)
 {
     while (true)
@@ -507,6 +497,12 @@ static string AskRequiredWithDefault(string label, string defaultValue)
     }
 }
 
+static string AskOptional(string label)
+{
+    Console.Write($"{label}: ");
+    return Console.ReadLine()?.Trim() ?? string.Empty;
+}
+
 static string AskOptionalWithDefault(string label, string defaultValue)
 {
     Console.Write($"{label} [{defaultValue}]: ");
@@ -515,6 +511,43 @@ static string AskOptionalWithDefault(string label, string defaultValue)
     return string.IsNullOrWhiteSpace(value)
         ? defaultValue.Trim()
         : value.Trim();
+}
+
+static List<string> AskList(string label)
+{
+    Console.Write($"{label}: ");
+    var value = Console.ReadLine();
+
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        return [];
+    }
+
+    return value
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .ToList();
+}
+
+static List<string> AskMultilineList(string label)
+{
+    Console.WriteLine($"{label} - write one item per line. Leave empty line to finish.");
+
+    var values = new List<string>();
+
+    while (true)
+    {
+        Console.Write("- ");
+        var value = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            break;
+        }
+
+        values.Add(value.Trim());
+    }
+
+    return values;
 }
 
 static List<string> AskMultilineListWithDefaults(string label, IReadOnlyCollection<string> defaultValues)
@@ -542,33 +575,23 @@ static List<string> AskMultilineListWithDefaults(string label, IReadOnlyCollecti
     return AskMultilineList(label);
 }
 
-static int ExportGraph(MemoryGraphService memoryGraphService, string[] args)
+static void PrintList(string title, IReadOnlyCollection<string> values)
 {
-    var outputPath = ReadOutputOption(args);
+    Console.WriteLine(title);
 
-    var result = memoryGraphService.ExportGraph(outputPath);
-
-    Console.WriteLine("Graph exported successfully.");
-    Console.WriteLine($"Path: {result.FilePath}");
-    Console.WriteLine($"Nodes: {result.NodesCount}");
-    Console.WriteLine($"Edges: {result.EdgesCount}");
-
-    return 0;
-}
-
-static string? ReadOutputOption(string[] args)
-{
-    for (var index = 1; index < args.Length; index++)
+    if (!values.Any())
     {
-        var value = args[index];
-
-        if (value.Equals("--output", StringComparison.OrdinalIgnoreCase))
-        {
-            return ReadOptionValue(args, ref index, "--output");
-        }
+        Console.WriteLine("-");
+        Console.WriteLine();
+        return;
     }
 
-    return null;
+    foreach (var value in values)
+    {
+        Console.WriteLine($"- {value}");
+    }
+
+    Console.WriteLine();
 }
 
 static void PrintHelp()
@@ -586,6 +609,7 @@ static void PrintHelp()
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- git-status [--path <repository-path>]");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- learn-from-git [--path <repository-path>]");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- graph-export [--output <file-path>]");
+    Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- graph-view [--output <file-path>]");
     Console.WriteLine();
     Console.WriteLine("Installed tool usage:");
     Console.WriteLine("  devmemory add");
@@ -597,6 +621,7 @@ static void PrintHelp()
     Console.WriteLine("  devmemory git-status [--path <repository-path>]");
     Console.WriteLine("  devmemory learn-from-git [--path <repository-path>]");
     Console.WriteLine("  devmemory graph-export [--output <file-path>]");
+    Console.WriteLine("  devmemory graph-view [--output <file-path>]");
     Console.WriteLine();
     Console.WriteLine("Examples:");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- search revision");
@@ -609,6 +634,8 @@ static void PrintHelp()
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- learn-from-git --path ~/work/LogicalCommon");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- graph-export");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- graph-export --output ~/devmemory-graph.json");
+    Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- graph-view");
+    Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- graph-view --output ~/devmemory-graph.html");
     Console.WriteLine();
     Console.WriteLine("Installed tool examples:");
     Console.WriteLine("  devmemory search revision");
@@ -618,6 +645,8 @@ static void PrintHelp()
     Console.WriteLine("  devmemory learn-from-git --path ~/work/LogicalCommon");
     Console.WriteLine("  devmemory graph-export");
     Console.WriteLine("  devmemory graph-export --output ~/devmemory-graph.json");
+    Console.WriteLine("  devmemory graph-view");
+    Console.WriteLine("  devmemory graph-view --output ~/devmemory-graph.html");
     Console.WriteLine();
     Console.WriteLine("Environment variables:");
     Console.WriteLine("  DEVMEMORY_HOME  Custom DevMemory storage directory");
