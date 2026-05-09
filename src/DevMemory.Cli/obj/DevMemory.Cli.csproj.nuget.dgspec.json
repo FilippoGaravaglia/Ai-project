@@ -342,7 +342,7 @@
       }
     },
     "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Cli/DevMemory.Cli.csproj": {
-      "version": "1.0.0",
+      "version": "0.1.0",
       "restore": {
         "projectUniqueName": "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Cli/DevMemory.Cli.csproj",
         "projectName": "DevMemory.Cli",
