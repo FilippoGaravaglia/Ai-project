@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DevMemory.Application/DevMemory.Application.csproj" />
+    <Project Path="src/DevMemory.Cli/DevMemory.Cli.csproj" />
+    <Project Path="src/DevMemory.Core/DevMemory.Core.csproj" />
+    <Project Path="src/DevMemory.Infrastructure/DevMemory.Infrastructure.csproj" />
+  </Folder>
+</Solution>
