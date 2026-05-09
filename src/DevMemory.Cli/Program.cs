@@ -370,4 +370,10 @@ static void PrintHelp()
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- search revision --project LogicalCommon");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- search revision --area Estimate");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- search revision --tag dotnet");
+    Console.WriteLine();
+    Console.WriteLine("Environment variables:");
+    Console.WriteLine("  DEVMEMORY_HOME  Custom DevMemory storage directory");
+    Console.WriteLine();
+    Console.WriteLine("Example:");
+    Console.WriteLine("  DEVMEMORY_HOME=~/devmemory-work dotnet run --project src/DevMemory.Cli -- storage");
 }
