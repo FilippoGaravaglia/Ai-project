@@ -26,13 +26,14 @@ public sealed class MemoryServiceTests
         };
 
         // Act
-        var markdownPath = service.Add(memory);
+        var result = service.Add(memory);
 
         // Assert
+        Assert.True(result.Success);
         Assert.Single(repository.SavedMemories);
         Assert.Equal(memory.Id, repository.SavedMemories[0].Id);
         Assert.Equal(memory.Id, exporter.ExportedMemoryId);
-        Assert.Equal("/fake/path/memory.md", markdownPath);
+        Assert.Equal("/fake/path/memory.md", result.MarkdownFilePath);
     }
 
     [Fact]
@@ -99,6 +100,60 @@ public sealed class MemoryServiceTests
         // Assert
         Assert.Equal("Newer task", results[0].Title);
         Assert.Equal("Older task", results[1].Title);
+    }
+
+    [Fact]
+    public void Add_WhenRequiredFieldsAreMissing_DoesNotSaveMemory()
+    {
+        // Arrange
+        var repository = new InMemoryRepository();
+        var exporter = new InMemoryExporter();
+    
+        var service = new MemoryService(repository, exporter);
+    
+        var memory = new TaskMemory();
+    
+        // Act
+        var result = service.Add(memory);
+    
+        // Assert
+        Assert.False(result.Success);
+        Assert.NotEmpty(result.Errors);
+        Assert.Empty(repository.SavedMemories);
+        Assert.Null(exporter.ExportedMemoryId);
+    }
+    
+    [Fact]
+    public void Add_WhenMemoryHasDuplicatedAndUntrimmedTags_NormalizesTags()
+    {
+        // Arrange
+        var repository = new InMemoryRepository();
+        var exporter = new InMemoryExporter();
+    
+        var service = new MemoryService(repository, exporter);
+    
+        var memory = new TaskMemory
+        {
+            Title = "  Test memory  ",
+            Project = " DevMemory ",
+            Area = " Application ",
+            Tags = [" DotNet ", "dotnet", " CLI "],
+            Problem = " Problem ",
+            Solution = " Solution "
+        };
+    
+        // Act
+        var result = service.Add(memory);
+    
+        // Assert
+        Assert.True(result.Success);
+    
+        var savedMemory = Assert.Single(repository.SavedMemories);
+    
+        Assert.Equal("Test memory", savedMemory.Title);
+        Assert.Equal("DevMemory", savedMemory.Project);
+        Assert.Equal("Application", savedMemory.Area);
+        Assert.Equal(["dotnet", "cli"], savedMemory.Tags);
     }
 
     private sealed class InMemoryRepository : IMemoryRepository

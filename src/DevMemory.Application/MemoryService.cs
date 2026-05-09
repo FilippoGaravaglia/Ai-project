@@ -1,4 +1,7 @@
 using DevMemory.Application.Abstractions;
+using DevMemory.Application.Models;
+using DevMemory.Application.Normalization;
+using DevMemory.Application.Validation;
 using DevMemory.Core;
 
 namespace DevMemory.Application;
@@ -16,15 +19,26 @@ public sealed class MemoryService
         _memoryExporter = memoryExporter;
     }
 
-    public string Add(TaskMemory memory)
+    public AddMemoryResult Add(TaskMemory memory)
     {
+        TaskMemoryNormalizer.Normalize(memory);
+
+        var errors = TaskMemoryValidator.Validate(memory);
+
+        if (errors.Count > 0)
+        {
+            return AddMemoryResult.Fail(errors);
+        }
+
         var memories = _repository.Load();
 
         memories.Add(memory);
 
         _repository.Save(memories);
 
-        return _memoryExporter.Export(memory);
+        var markdownFilePath = _memoryExporter.Export(memory);
+
+        return AddMemoryResult.Ok(markdownFilePath);
     }
 
     public IReadOnlyCollection<TaskMemory> List()

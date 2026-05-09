@@ -73,12 +73,25 @@ static void AddMemory(MemoryService service)
         LessonsLearned = AskOptional("Lessons learned")
     };
 
-    var markdownFilePath = service.Add(memory);
+    var result = service.Add(memory);
 
     Console.WriteLine();
-    Console.WriteLine("Memory saved successfully.");
-    Console.WriteLine($"Id: {memory.Id}");
-    Console.WriteLine($"Markdown: {markdownFilePath}");
+
+    if (!result.Success)
+    {
+        Console.WriteLine("Memory was not saved because validation failed.");
+
+        foreach (var error in result.Errors)
+        {
+            Console.WriteLine($"- {error}");
+        }
+
+        return;
+    }
+
+Console.WriteLine("Memory saved successfully.");
+Console.WriteLine($"Id: {memory.Id}");
+Console.WriteLine($"Markdown: {result.MarkdownFilePath}");
 }
 
 static void ListMemories(MemoryService service)
