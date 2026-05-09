@@ -2,10 +2,12 @@
 using DevMemory.Application.Models;
 using DevMemory.Core;
 using DevMemory.Infrastructure;
+using DevMemory.Infrastructure.Git;
 
 var repository = new MemoryRepository();
 var markdownExporter = new MarkdownMemoryExporter();
 var service = new MemoryService(repository, markdownExporter);
+var gitInspector = new GitRepositoryInspector();
 
 if (args.Length == 0)
 {
@@ -25,6 +27,7 @@ try
         "show" => ShowMemory(service, args),
         "storage" => ShowStoragePath(service),
         "markdown" => ShowMarkdownDirectory(service),
+        "git-status" => ShowGitStatus(gitInspector, args),
         "help" or "--help" or "-h" => PrintHelpAndReturnSuccess(),
         _ => HandleUnknownCommand(command)
     };
@@ -352,6 +355,59 @@ static void PrintList(string title, IReadOnlyCollection<string> values)
     Console.WriteLine();
 }
 
+static int ShowGitStatus(GitRepositoryInspector gitInspector, string[] args)
+{
+    var repositoryPath = ReadPathOption(args) ?? Directory.GetCurrentDirectory();
+
+    var snapshot = gitInspector.Inspect(repositoryPath);
+
+    Console.WriteLine($"Repository: {snapshot.RepositoryPath}");
+    Console.WriteLine($"Branch: {snapshot.BranchName}");
+    Console.WriteLine($"Last commit: {FormatLastCommit(snapshot)}");
+    Console.WriteLine();
+
+    Console.WriteLine("Changed files:");
+
+    if (!snapshot.ChangedFiles.Any())
+    {
+        Console.WriteLine("-");
+        return 0;
+    }
+
+    foreach (var file in snapshot.ChangedFiles)
+    {
+        Console.WriteLine($"- {file}");
+    }
+
+    return 0;
+}
+
+static string? ReadPathOption(string[] args)
+{
+    for (var index = 1; index < args.Length; index++)
+    {
+        var value = args[index];
+
+        if (value.Equals("--path", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReadOptionValue(args, ref index, "--path");
+        }
+    }
+
+    return null;
+}
+
+static string FormatLastCommit(DevMemory.Application.Models.GitRepositorySnapshot snapshot)
+{
+    if (string.IsNullOrWhiteSpace(snapshot.LastCommitHash) &&
+        string.IsNullOrWhiteSpace(snapshot.LastCommitMessage))
+    {
+        return "-";
+    }
+
+    return $"{snapshot.LastCommitHash} - {snapshot.LastCommitMessage}";
+}
+
 static void PrintHelp()
 {
     Console.WriteLine("DevMemory - Local Developer Memory");
@@ -364,16 +420,34 @@ static void PrintHelp()
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- show <memory-id>");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- storage");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- markdown");
+    Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- git-status [--path <repository-path>]");
+    Console.WriteLine();
+    Console.WriteLine("Installed tool usage:");
+    Console.WriteLine("  devmemory add");
+    Console.WriteLine("  devmemory list");
+    Console.WriteLine("  devmemory search <query> [--project <project>] [--area <area>] [--tag <tag>]");
+    Console.WriteLine("  devmemory show <memory-id>");
+    Console.WriteLine("  devmemory storage");
+    Console.WriteLine("  devmemory markdown");
+    Console.WriteLine("  devmemory git-status [--path <repository-path>]");
     Console.WriteLine();
     Console.WriteLine("Examples:");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- search revision");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- search revision --project LogicalCommon");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- search revision --area Estimate");
     Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- search revision --tag dotnet");
+    Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- git-status");
+    Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- git-status --path ~/work/LogicalCommon");
+    Console.WriteLine();
+    Console.WriteLine("Installed tool examples:");
+    Console.WriteLine("  devmemory search revision");
+    Console.WriteLine("  devmemory git-status");
+    Console.WriteLine("  devmemory git-status --path ~/work/LogicalCommon");
     Console.WriteLine();
     Console.WriteLine("Environment variables:");
     Console.WriteLine("  DEVMEMORY_HOME  Custom DevMemory storage directory");
     Console.WriteLine();
     Console.WriteLine("Example:");
     Console.WriteLine("  DEVMEMORY_HOME=~/devmemory-work dotnet run --project src/DevMemory.Cli -- storage");
+    Console.WriteLine("  DEVMEMORY_HOME=~/devmemory-work devmemory storage");
 }
