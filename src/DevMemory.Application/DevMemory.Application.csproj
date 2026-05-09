@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DevMemory.Core\DevMemory.Core.csproj" />
-    <ProjectReference Include="..\DevMemory.Infrastructure\DevMemory.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,9 +1,10 @@
 using System.Text.Json;
+using DevMemory.Application.Abstractions;
 using DevMemory.Core;
 
 namespace DevMemory.Infrastructure;
 
-public sealed class MemoryRepository
+public sealed class MemoryRepository : IMemoryRepository
 {
     private readonly DevMemoryStorageOptions _options;
 

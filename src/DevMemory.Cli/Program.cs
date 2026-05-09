@@ -1,7 +1,10 @@
 ﻿using DevMemory.Application;
 using DevMemory.Core;
+using DevMemory.Infrastructure;
 
-var service = new MemoryService();
+var repository = new MemoryRepository();
+var markdownExporter = new MarkdownMemoryExporter();
+var service = new MemoryService(repository, markdownExporter);
 
 if (args.Length == 0)
 {

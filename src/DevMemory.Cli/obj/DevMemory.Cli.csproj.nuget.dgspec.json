@@ -28,9 +28,6 @@
             "projectReferences": {
               "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Core/DevMemory.Core.csproj": {
                 "projectPath": "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Core/DevMemory.Core.csproj"
-              },
-              "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Infrastructure/DevMemory.Infrastructure.csproj": {
-                "projectPath": "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Infrastructure/DevMemory.Infrastructure.csproj"
               }
             }
           }
@@ -1042,6 +1039,9 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
+              "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Application/DevMemory.Application.csproj": {
+                "projectPath": "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Application/DevMemory.Application.csproj"
+              },
               "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Core/DevMemory.Core.csproj": {
                 "projectPath": "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Core/DevMemory.Core.csproj"
               }

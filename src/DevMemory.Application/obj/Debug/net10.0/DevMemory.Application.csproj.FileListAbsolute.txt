@@ -8,9 +8,7 @@
 /Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Application/bin/Debug/net10.0/DevMemory.Application.dll
 /Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Application/bin/Debug/net10.0/DevMemory.Application.pdb
 /Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Application/bin/Debug/net10.0/DevMemory.Core.dll
-/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Application/bin/Debug/net10.0/DevMemory.Infrastructure.dll
 /Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Application/bin/Debug/net10.0/DevMemory.Core.pdb
-/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Application/bin/Debug/net10.0/DevMemory.Infrastructure.pdb
 /Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Application/obj/Debug/net10.0/DevMemor.3CA8F6A8.Up2Date
 /Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Application/obj/Debug/net10.0/DevMemory.Application.dll
 /Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Application/obj/Debug/net10.0/refint/DevMemory.Application.dll

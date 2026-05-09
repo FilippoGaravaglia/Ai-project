@@ -8,10 +8,22 @@
     ".NETCoreApp,Version=v10.0": {
       "DevMemory.Infrastructure/1.0.0": {
         "dependencies": {
+          "DevMemory.Application": "1.0.0",
           "DevMemory.Core": "1.0.0"
         },
         "runtime": {
           "DevMemory.Infrastructure.dll": {}
+        }
+      },
+      "DevMemory.Application/1.0.0": {
+        "dependencies": {
+          "DevMemory.Core": "1.0.0"
+        },
+        "runtime": {
+          "DevMemory.Application.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "DevMemory.Core/1.0.0": {
@@ -26,6 +38,11 @@
   },
   "libraries": {
     "DevMemory.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "DevMemory.Application/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

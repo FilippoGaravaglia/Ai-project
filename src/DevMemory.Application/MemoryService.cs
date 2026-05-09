@@ -1,17 +1,19 @@
+using DevMemory.Application.Abstractions;
 using DevMemory.Core;
-using DevMemory.Infrastructure;
 
 namespace DevMemory.Application;
 
 public sealed class MemoryService
 {
-    private readonly MemoryRepository _repository;
-    private readonly MarkdownMemoryExporter _markdownExporter;
+    private readonly IMemoryRepository _repository;
+    private readonly IMemoryExporter _memoryExporter;
 
-    public MemoryService()
+    public MemoryService(
+        IMemoryRepository repository,
+        IMemoryExporter memoryExporter)
     {
-        _repository = new MemoryRepository();
-        _markdownExporter = new MarkdownMemoryExporter();
+        _repository = repository;
+        _memoryExporter = memoryExporter;
     }
 
     public string Add(TaskMemory memory)
@@ -22,7 +24,7 @@ public sealed class MemoryService
 
         _repository.Save(memories);
 
-        return _markdownExporter.Export(memory);
+        return _memoryExporter.Export(memory);
     }
 
     public IReadOnlyCollection<TaskMemory> List()

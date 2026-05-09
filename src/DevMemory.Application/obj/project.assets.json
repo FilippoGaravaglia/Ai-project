@@ -11,19 +11,6 @@
         "runtime": {
           "bin/placeholder/DevMemory.Core.dll": {}
         }
-      },
-      "DevMemory.Infrastructure/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v10.0",
-        "dependencies": {
-          "DevMemory.Core": "1.0.0"
-        },
-        "compile": {
-          "bin/placeholder/DevMemory.Infrastructure.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/DevMemory.Infrastructure.dll": {}
-        }
       }
     }
   },
@@ -32,17 +19,11 @@
       "type": "project",
       "path": "../DevMemory.Core/DevMemory.Core.csproj",
       "msbuildProject": "../DevMemory.Core/DevMemory.Core.csproj"
-    },
-    "DevMemory.Infrastructure/1.0.0": {
-      "type": "project",
-      "path": "../DevMemory.Infrastructure/DevMemory.Infrastructure.csproj",
-      "msbuildProject": "../DevMemory.Infrastructure/DevMemory.Infrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-      "DevMemory.Core >= 1.0.0",
-      "DevMemory.Infrastructure >= 1.0.0"
+      "DevMemory.Core >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -72,9 +53,6 @@
           "projectReferences": {
             "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Core/DevMemory.Core.csproj": {
               "projectPath": "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Core/DevMemory.Core.csproj"
-            },
-            "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Infrastructure/DevMemory.Infrastructure.csproj": {
-              "projectPath": "/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Infrastructure/DevMemory.Infrastructure.csproj"
             }
           }
         }
