@@ -3,11 +3,16 @@ using AiAgent.Core;
 
 namespace AiAgent.Infrastructure;
 
-public class MemoryRepository
+public sealed class MemoryRepository
 {
-    private const string FilePath = "memory.json";
+    private const string FilePath = "devmemory.json";
 
-    public List<MemoryEntry> Load()
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
+    public List<TaskMemory> Load()
     {
         if (!File.Exists(FilePath))
         {
@@ -15,16 +20,18 @@ public class MemoryRepository
         }
 
         var json = File.ReadAllText(FilePath);
-        return JsonSerializer.Deserialize<List<MemoryEntry>>(json) ?? [];
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return [];
+        }
+
+        return JsonSerializer.Deserialize<List<TaskMemory>>(json, JsonOptions) ?? [];
     }
 
-    public void Save(List<MemoryEntry> entries)
+    public void Save(List<TaskMemory> memories)
     {
-        var json = JsonSerializer.Serialize(entries, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
-
+        var json = JsonSerializer.Serialize(memories, JsonOptions);
         File.WriteAllText(FilePath, json);
     }
 }
