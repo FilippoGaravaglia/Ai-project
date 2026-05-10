@@ -1,0 +1,7 @@
+
+# Build/package artifacts
+artifacts/
+
+# macOS Finder metadata
+.DS_Store
+**/.DS_Store
