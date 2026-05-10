@@ -4,12 +4,13 @@
     <id>DevMemory.Cli</id>
     <version>0.1.3</version>
     <authors>Filippo Garavaglia</authors>
-    <description>Local-first developer memory CLI for storing, searching and exporting engineering task knowledge.</description>
-    <tags>developer-tools memory cli knowledge-base</tags>
+    <readme>README.md</readme>
+    <description>Local-first developer memory CLI for capturing, searching, exporting and visualizing technical knowledge.</description>
+    <tags>dotnet cli developer-tools knowledge-management git local-first</tags>
     <packageTypes>
       <packageType name="DotnetTool" />
     </packageTypes>
-    <repository type="git" commit="68bce039cf776d7526039fd4ef455dab0b10945b" />
+    <repository type="git" commit="25911c64dccadc317dfeb5844cd679b38250d198" />
   </metadata>
   <files>
     <file src="/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Cli/obj/Release/net10.0/DotnetToolSettings.xml" target="tools/net10.0/any/DotnetToolSettings.xml" />
@@ -23,5 +24,7 @@
     <file src="/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Cli/bin/Release/net10.0/publish/DevMemory.Core.pdb" target="tools/net10.0/any/DevMemory.Core.pdb" />
     <file src="/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Cli/bin/Release/net10.0/publish/DevMemory.Infrastructure.dll" target="tools/net10.0/any/DevMemory.Infrastructure.dll" />
     <file src="/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Cli/bin/Release/net10.0/publish/DevMemory.Infrastructure.pdb" target="tools/net10.0/any/DevMemory.Infrastructure.pdb" />
+    <file src="/Users/filippogaravaglia/Downloads/Ai project/README.md" target="/README.md" />
+    <file src="/Users/filippogaravaglia/Downloads/Ai project/CHANGELOG.md" target="/CHANGELOG.md" />
   </files>
 </package>

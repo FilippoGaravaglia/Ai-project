@@ -4,7 +4,7 @@ namespace DevMemory.Cli.CommandLine;
 
 public sealed class CommandDispatcher
 {
-    private readonly IReadOnlyDictionary<string, ICommandHandler> _handlers;
+    private readonly Dictionary<string, ICommandHandler> _handlers;
 
     public CommandDispatcher(IEnumerable<ICommandHandler> handlers)
     {

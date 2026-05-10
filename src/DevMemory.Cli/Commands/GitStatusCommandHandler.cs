@@ -28,7 +28,7 @@ public sealed class GitStatusCommandHandler : ICommandHandler
 
         Console.WriteLine("Changed files:");
 
-        if (!snapshot.ChangedFiles.Any())
+        if (snapshot.ChangedFiles.Count == 0)
         {
             Console.WriteLine("-");
             return CliExitCodes.Success;

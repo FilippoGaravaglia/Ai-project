@@ -38,10 +38,11 @@ public static class MemoryConsolePrinter
     {
         Console.WriteLine(title);
 
-        if (!values.Any())
+        if (values.Count == 0)
         {
             Console.WriteLine("-");
             Console.WriteLine();
+
             return;
         }
 

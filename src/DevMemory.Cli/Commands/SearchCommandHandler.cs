@@ -34,7 +34,7 @@ public sealed class SearchCommandHandler : ICommandHandler
 
         var results = _memoryService.Search(options);
 
-        if (!results.Any())
+        if (results.Count == 0)
         {
             Console.WriteLine("No matching memories found.");
             return CliExitCodes.Success;

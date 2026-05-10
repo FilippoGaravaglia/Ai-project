@@ -18,7 +18,7 @@ public sealed class ListCommandHandler : ICommandHandler
     {
         var memories = _memoryService.List();
 
-        if (!memories.Any())
+        if (memories.Count == 0)
         {
             Console.WriteLine("No memories found.");
             return CliExitCodes.Success;

@@ -96,7 +96,7 @@ public static class CliPrompt
         string label,
         IReadOnlyCollection<string> defaultValues)
     {
-        if (defaultValues.Any())
+        if (defaultValues.Count > 0)
         {
             Console.WriteLine($"{label} detected from Git:");
 
