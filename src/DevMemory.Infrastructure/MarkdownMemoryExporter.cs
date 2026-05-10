@@ -37,16 +37,16 @@ public sealed class MarkdownMemoryExporter : IMemoryExporter
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"# {memory.Title}");
+        AppendInvariantLine(builder, $"# {memory.Title}");
         builder.AppendLine();
 
         builder.AppendLine("## Metadata");
-        builder.AppendLine($"- Id: `{memory.Id}`");
-        builder.AppendLine($"- Project: {memory.Project}");
-        builder.AppendLine($"- Area: {memory.Area}");
-        builder.AppendLine($"- Branch: {FormatOptional(memory.Branch)}");
-        builder.AppendLine($"- Created at: {memory.CreatedAt:u}");
-        builder.AppendLine($"- Tags: {FormatListInline(memory.Tags)}");
+        AppendInvariantLine(builder, $"- Id: `{memory.Id}`");
+        AppendInvariantLine(builder, $"- Project: {memory.Project}");
+        AppendInvariantLine(builder, $"- Area: {memory.Area}");
+        AppendInvariantLine(builder, $"- Branch: {FormatOptional(memory.Branch)}");
+        AppendInvariantLine(builder, $"- Created at: {memory.CreatedAt:u}");
+        AppendInvariantLine(builder, $"- Tags: {FormatListInline(memory.Tags)}");
         builder.AppendLine();
 
         builder.AppendLine("## Problem");
@@ -67,17 +67,17 @@ public sealed class MarkdownMemoryExporter : IMemoryExporter
 
         builder.AppendLine("## Continuation prompt");
         builder.AppendLine("```text");
-        builder.AppendLine($"I am continuing the task \"{memory.Title}\".");
-        builder.AppendLine($"Project: {memory.Project}");
-        builder.AppendLine($"Area: {memory.Area}");
+        AppendInvariantLine(builder, $"I am continuing the task \"{memory.Title}\".");
+        AppendInvariantLine(builder, $"Project: {memory.Project}");
+        AppendInvariantLine(builder, $"Area: {memory.Area}");
         builder.AppendLine();
         builder.AppendLine("Use the following context:");
-        builder.AppendLine($"Problem: {memory.Problem}");
-        builder.AppendLine($"Solution: {memory.Solution}");
-        builder.AppendLine($"Key decisions: {FormatListInline(memory.Decisions)}");
-        builder.AppendLine($"Files touched: {FormatListInline(memory.FilesTouched)}");
-        builder.AppendLine($"Tests: {FormatListInline(memory.Tests)}");
-        builder.AppendLine($"Lessons learned: {memory.LessonsLearned}");
+        AppendInvariantLine(builder, $"Problem: {memory.Problem}");
+        AppendInvariantLine(builder, $"Solution: {memory.Solution}");
+        AppendInvariantLine(builder, $"Key decisions: {FormatListInline(memory.Decisions)}");
+        AppendInvariantLine(builder, $"Files touched: {FormatListInline(memory.FilesTouched)}");
+        AppendInvariantLine(builder, $"Tests: {FormatListInline(memory.Tests)}");
+        AppendInvariantLine(builder, $"Lessons learned: {memory.LessonsLearned}");
         builder.AppendLine();
         builder.AppendLine("Help me continue this work with a pragmatic, enterprise-grade approach.");
         builder.AppendLine("```");
@@ -85,20 +85,24 @@ public sealed class MarkdownMemoryExporter : IMemoryExporter
         return builder.ToString();
     }
 
-    private static void AppendListSection(StringBuilder builder, string title, IReadOnlyCollection<string> values)
+    private static void AppendListSection(
+        StringBuilder builder,
+        string title,
+        List<string> values)
     {
-        builder.AppendLine($"## {title}");
+        AppendInvariantLine(builder, $"## {title}");
 
-        if (!values.Any())
+        if (values.Count == 0)
         {
             builder.AppendLine("-");
             builder.AppendLine();
+
             return;
         }
 
         foreach (var value in values)
         {
-            builder.AppendLine($"- {value}");
+            AppendInvariantLine(builder, $"- {value}");
         }
 
         builder.AppendLine();
@@ -156,10 +160,18 @@ public sealed class MarkdownMemoryExporter : IMemoryExporter
         return string.IsNullOrWhiteSpace(value) ? "-" : value;
     }
 
-    private static string FormatListInline(IReadOnlyCollection<string> values)
+    private static string FormatListInline(List<string> values)
     {
-        return values.Any()
+        return values.Count > 0
             ? string.Join(", ", values)
             : "-";
+    }
+
+    /// <summary>
+    /// Appends an interpolated line using invariant culture.
+    /// </summary>
+    private static void AppendInvariantLine(StringBuilder builder, FormattableString value)
+    {
+        builder.AppendLine(FormattableString.Invariant(value));
     }
 }
