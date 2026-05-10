@@ -15,18 +15,9 @@ public sealed class CommandDispatcher
 
     public int Dispatch(string[] args)
     {
-        if (args.Length == 0)
-        {
-            PrintHelp();
-            return CliExitCodes.InvalidCommand;
-        }
+        args = CommandOptions.NormalizeCommandAliases(args);
 
-        var command = args[0].Trim().ToLowerInvariant();
-
-        if (command is "--help" or "-h")
-        {
-            command = "help";
-        }
+        var command = args[0].Trim();
 
         try
         {
@@ -35,6 +26,7 @@ public sealed class CommandDispatcher
                 Console.Error.WriteLine($"Unknown command: {command}");
                 Console.Error.WriteLine();
                 PrintHelp();
+
                 return CliExitCodes.InvalidCommand;
             }
 
@@ -43,12 +35,14 @@ public sealed class CommandDispatcher
         catch (ArgumentException ex)
         {
             Console.Error.WriteLine(ex.Message);
+
             return CliExitCodes.InvalidCommand;
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine("Unexpected error.");
             Console.Error.WriteLine(ex.Message);
+
             return CliExitCodes.Failure;
         }
     }
@@ -60,7 +54,7 @@ public sealed class CommandDispatcher
     {
         if (_handlers.TryGetValue("help", out var helpHandler))
         {
-            helpHandler.Execute([]);
+            helpHandler.Execute(["help"]);
         }
     }
 }

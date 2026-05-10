@@ -5,6 +5,7 @@ using DevMemory.Infrastructure;
 using DevMemory.Infrastructure.Git;
 using DevMemory.Infrastructure.Graph;
 
+
 var repository = new MemoryRepository();
 var markdownExporter = new MarkdownMemoryExporter();
 var memoryService = new MemoryService(repository, markdownExporter);
@@ -28,6 +29,7 @@ var commandHandlers = new ICommandHandler[]
     new LearnFromGitCommandHandler(memoryService, gitMemoryDraftService),
     new GraphExportCommandHandler(memoryGraphService),
     new GraphViewCommandHandler(memoryGraphService),
+    new VersionCommandHandler(),
     new HelpCommandHandler()
 };
 

@@ -6,50 +6,37 @@ namespace DevMemory.Cli.Tests;
 public sealed class CommandDispatcherTests
 {
     [Fact]
-    public void Dispatch_WhenNoArgsAreProvided_ExecutesHelpAndReturnsInvalidCommand()
+    public void Dispatch_WhenNoArgsAreProvided_ExecutesHelpAndReturnsSuccess()
     {
         // Arrange
-        var helpHandler = new FakeCommandHandler("help", CliExitCodes.Success);
-
-        var dispatcher = new CommandDispatcher(
-        [
-            helpHandler
-        ]);
+        var helpHandler = new TestCommandHandler("help", CliExitCodes.Success);
+        var dispatcher = new CommandDispatcher([helpHandler]);
 
         // Act
         var exitCode = dispatcher.Dispatch([]);
 
         // Assert
-        Assert.Equal(CliExitCodes.InvalidCommand, exitCode);
+        Assert.Equal(CliExitCodes.Success, exitCode);
         Assert.True(helpHandler.WasExecuted);
-        Assert.Empty(helpHandler.ReceivedArgs);
+        Assert.Equal(["help"], helpHandler.LastArgs);
     }
 
     [Fact]
     public void Dispatch_WhenKnownCommandIsProvided_ExecutesMatchingHandler()
     {
         // Arrange
-        var listHandler = new FakeCommandHandler("list", CliExitCodes.Success);
-        var helpHandler = new FakeCommandHandler("help", CliExitCodes.Success);
+        var addHandler = new TestCommandHandler("add", CliExitCodes.Success);
+        var helpHandler = new TestCommandHandler("help", CliExitCodes.Success);
 
-        var dispatcher = new CommandDispatcher(
-        [
-            listHandler,
-            helpHandler
-        ]);
-
-        var args = new[]
-        {
-            "list"
-        };
+        var dispatcher = new CommandDispatcher([addHandler, helpHandler]);
 
         // Act
-        var exitCode = dispatcher.Dispatch(args);
+        var exitCode = dispatcher.Dispatch(["add"]);
 
         // Assert
         Assert.Equal(CliExitCodes.Success, exitCode);
-        Assert.True(listHandler.WasExecuted);
-        Assert.Equal(args, listHandler.ReceivedArgs);
+        Assert.True(addHandler.WasExecuted);
+        Assert.Equal(["add"], addHandler.LastArgs);
         Assert.False(helpHandler.WasExecuted);
     }
 
@@ -57,133 +44,204 @@ public sealed class CommandDispatcherTests
     public void Dispatch_WhenHelpAliasIsProvided_ExecutesHelpHandler()
     {
         // Arrange
-        var helpHandler = new FakeCommandHandler("help", CliExitCodes.Success);
-
-        var dispatcher = new CommandDispatcher(
-        [
-            helpHandler
-        ]);
-
-        var args = new[]
-        {
-            "--help"
-        };
+        var helpHandler = new TestCommandHandler("help", CliExitCodes.Success);
+        var dispatcher = new CommandDispatcher([helpHandler]);
 
         // Act
-        var exitCode = dispatcher.Dispatch(args);
+        var exitCode = dispatcher.Dispatch(["--help"]);
 
         // Assert
         Assert.Equal(CliExitCodes.Success, exitCode);
         Assert.True(helpHandler.WasExecuted);
-        Assert.Equal(args, helpHandler.ReceivedArgs);
+        Assert.Equal(["help"], helpHandler.LastArgs);
+    }
+
+    [Fact]
+    public void Dispatch_WhenShortHelpAliasIsProvided_ExecutesHelpHandler()
+    {
+        // Arrange
+        var helpHandler = new TestCommandHandler("help", CliExitCodes.Success);
+        var dispatcher = new CommandDispatcher([helpHandler]);
+
+        // Act
+        var exitCode = dispatcher.Dispatch(["-h"]);
+
+        // Assert
+        Assert.Equal(CliExitCodes.Success, exitCode);
+        Assert.True(helpHandler.WasExecuted);
+        Assert.Equal(["help"], helpHandler.LastArgs);
+    }
+
+    [Fact]
+    public void Dispatch_WhenVersionAliasIsProvided_ExecutesVersionHandler()
+    {
+        // Arrange
+        var versionHandler = new TestCommandHandler("version", CliExitCodes.Success);
+        var helpHandler = new TestCommandHandler("help", CliExitCodes.Success);
+
+        var dispatcher = new CommandDispatcher([versionHandler, helpHandler]);
+
+        // Act
+        var exitCode = dispatcher.Dispatch(["--version"]);
+
+        // Assert
+        Assert.Equal(CliExitCodes.Success, exitCode);
+        Assert.True(versionHandler.WasExecuted);
+        Assert.Equal(["version"], versionHandler.LastArgs);
+        Assert.False(helpHandler.WasExecuted);
+    }
+
+    [Fact]
+    public void Dispatch_WhenShortVersionAliasIsProvided_ExecutesVersionHandler()
+    {
+        // Arrange
+        var versionHandler = new TestCommandHandler("version", CliExitCodes.Success);
+        var helpHandler = new TestCommandHandler("help", CliExitCodes.Success);
+
+        var dispatcher = new CommandDispatcher([versionHandler, helpHandler]);
+
+        // Act
+        var exitCode = dispatcher.Dispatch(["-v"]);
+
+        // Assert
+        Assert.Equal(CliExitCodes.Success, exitCode);
+        Assert.True(versionHandler.WasExecuted);
+        Assert.Equal(["version"], versionHandler.LastArgs);
+        Assert.False(helpHandler.WasExecuted);
     }
 
     [Fact]
     public void Dispatch_WhenUnknownCommandIsProvided_ReturnsInvalidCommand()
     {
         // Arrange
-        var listHandler = new FakeCommandHandler("list", CliExitCodes.Success);
-        var helpHandler = new FakeCommandHandler("help", CliExitCodes.Success);
+        using var errorOutput = new StringWriter();
+        var originalError = Console.Error;
 
-        var dispatcher = new CommandDispatcher(
-        [
-            listHandler,
-            helpHandler
-        ]);
+        var helpHandler = new TestCommandHandler("help", CliExitCodes.Success);
+        var dispatcher = new CommandDispatcher([helpHandler]);
 
-        // Act
-        var exitCode = dispatcher.Dispatch(["unknown"]);
+        try
+        {
+            Console.SetError(errorOutput);
 
-        // Assert
-        Assert.Equal(CliExitCodes.InvalidCommand, exitCode);
-        Assert.False(listHandler.WasExecuted);
-        Assert.True(helpHandler.WasExecuted);
+            // Act
+            var exitCode = dispatcher.Dispatch(["unknown"]);
+
+            // Assert
+            Assert.Equal(CliExitCodes.InvalidCommand, exitCode);
+            Assert.True(helpHandler.WasExecuted);
+            Assert.Equal(["help"], helpHandler.LastArgs);
+            Assert.Contains("Unknown command: unknown", errorOutput.ToString(), StringComparison.Ordinal);
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
     }
 
     [Fact]
     public void Dispatch_WhenHandlerThrowsArgumentException_ReturnsInvalidCommand()
     {
         // Arrange
-        var failingHandler = new FakeCommandHandler(
-            "search",
-            CliExitCodes.Success,
+        using var errorOutput = new StringWriter();
+        var originalError = Console.Error;
+
+        var invalidHandler = new ThrowingCommandHandler(
+            "invalid",
             new ArgumentException("Invalid option."));
 
-        var helpHandler = new FakeCommandHandler("help", CliExitCodes.Success);
+        var helpHandler = new TestCommandHandler("help", CliExitCodes.Success);
+        var dispatcher = new CommandDispatcher([invalidHandler, helpHandler]);
 
-        var dispatcher = new CommandDispatcher(
-        [
-            failingHandler,
-            helpHandler
-        ]);
+        try
+        {
+            Console.SetError(errorOutput);
 
-        // Act
-        var exitCode = dispatcher.Dispatch(["search", "test", "--project"]);
+            // Act
+            var exitCode = dispatcher.Dispatch(["invalid"]);
 
-        // Assert
-        Assert.Equal(CliExitCodes.InvalidCommand, exitCode);
-        Assert.True(failingHandler.WasExecuted);
-        Assert.False(helpHandler.WasExecuted);
+            // Assert
+            Assert.Equal(CliExitCodes.InvalidCommand, exitCode);
+            Assert.Contains("Invalid option.", errorOutput.ToString(), StringComparison.Ordinal);
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
     }
 
     [Fact]
     public void Dispatch_WhenHandlerThrowsUnexpectedException_ReturnsFailure()
     {
         // Arrange
-        var failingHandler = new FakeCommandHandler(
-            "list",
-            CliExitCodes.Success,
+        using var errorOutput = new StringWriter();
+        var originalError = Console.Error;
+
+        var failingHandler = new ThrowingCommandHandler(
+            "fail",
             new InvalidOperationException("Storage unavailable."));
 
-        var helpHandler = new FakeCommandHandler("help", CliExitCodes.Success);
+        var helpHandler = new TestCommandHandler("help", CliExitCodes.Success);
+        var dispatcher = new CommandDispatcher([failingHandler, helpHandler]);
 
-        var dispatcher = new CommandDispatcher(
-        [
-            failingHandler,
-            helpHandler
-        ]);
+        try
+        {
+            Console.SetError(errorOutput);
 
-        // Act
-        var exitCode = dispatcher.Dispatch(["list"]);
+            // Act
+            var exitCode = dispatcher.Dispatch(["fail"]);
 
-        // Assert
-        Assert.Equal(CliExitCodes.Failure, exitCode);
-        Assert.True(failingHandler.WasExecuted);
-        Assert.False(helpHandler.WasExecuted);
+            // Assert
+            Assert.Equal(CliExitCodes.Failure, exitCode);
+            Assert.Contains("Unexpected error.", errorOutput.ToString(), StringComparison.Ordinal);
+            Assert.Contains("Storage unavailable.", errorOutput.ToString(), StringComparison.Ordinal);
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
     }
 
-    private sealed class FakeCommandHandler : ICommandHandler
+    private sealed class TestCommandHandler : ICommandHandler
     {
         private readonly int _exitCode;
-        private readonly Exception? _exceptionToThrow;
 
-        public FakeCommandHandler(
-            string name,
-            int exitCode,
-            Exception? exceptionToThrow = null)
+        public TestCommandHandler(string name, int exitCode)
         {
             Name = name;
             _exitCode = exitCode;
-            _exceptionToThrow = exceptionToThrow;
         }
 
         public string Name { get; }
 
         public bool WasExecuted { get; private set; }
 
-        public string[] ReceivedArgs { get; private set; } = [];
+        public string[]? LastArgs { get; private set; }
 
         public int Execute(string[] args)
         {
             WasExecuted = true;
-            ReceivedArgs = args;
-
-            if (_exceptionToThrow is not null)
-            {
-                throw _exceptionToThrow;
-            }
+            LastArgs = args;
 
             return _exitCode;
+        }
+    }
+
+    private sealed class ThrowingCommandHandler : ICommandHandler
+    {
+        private readonly Exception _exception;
+
+        public ThrowingCommandHandler(string name, Exception exception)
+        {
+            Name = name;
+            _exception = exception;
+        }
+
+        public string Name { get; }
+
+        public int Execute(string[] args)
+        {
+            throw _exception;
         }
     }
 }

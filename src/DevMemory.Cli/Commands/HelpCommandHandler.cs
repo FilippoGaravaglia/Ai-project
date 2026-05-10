@@ -11,6 +11,7 @@ public sealed class HelpCommandHandler : ICommandHandler
         Console.WriteLine("DevMemory - Local Developer Memory");
         Console.WriteLine("----------------------------------");
         Console.WriteLine();
+
         Console.WriteLine("Usage:");
         Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- add");
         Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- list");
@@ -22,7 +23,10 @@ public sealed class HelpCommandHandler : ICommandHandler
         Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- learn-from-git [--path <repository-path>]");
         Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- graph-export [--output <file-path>]");
         Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- graph-view [--output <file-path>]");
+        Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- version");
+        Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- --version");
         Console.WriteLine();
+
         Console.WriteLine("Installed tool usage:");
         Console.WriteLine("  devmemory add");
         Console.WriteLine("  devmemory list");
@@ -34,7 +38,31 @@ public sealed class HelpCommandHandler : ICommandHandler
         Console.WriteLine("  devmemory learn-from-git [--path <repository-path>]");
         Console.WriteLine("  devmemory graph-export [--output <file-path>]");
         Console.WriteLine("  devmemory graph-view [--output <file-path>]");
+        Console.WriteLine("  devmemory version");
+        Console.WriteLine("  devmemory --version");
+        Console.WriteLine("  devmemory -v");
         Console.WriteLine();
+
+        Console.WriteLine("Commands:");
+        Console.WriteLine("  add              Create a new structured memory.");
+        Console.WriteLine("  list             List saved memories.");
+        Console.WriteLine("  search           Search memories by text and optional filters.");
+        Console.WriteLine("  show             Show a memory by id.");
+        Console.WriteLine("  storage          Show the current storage file path.");
+        Console.WriteLine("  markdown         Show the Markdown export directory.");
+        Console.WriteLine("  git-status       Inspect the current or selected Git repository.");
+        Console.WriteLine("  learn-from-git   Create a memory draft from Git context.");
+        Console.WriteLine("  graph-export     Export the memory graph as JSON.");
+        Console.WriteLine("  graph-view       Generate the local HTML graph view.");
+        Console.WriteLine("  version          Show the current DevMemory version.");
+        Console.WriteLine("  help             Show this help message.");
+        Console.WriteLine();
+
+        Console.WriteLine("Global aliases:");
+        Console.WriteLine("  --help, -h       Show this help message.");
+        Console.WriteLine("  --version, -v    Show the current DevMemory version.");
+        Console.WriteLine();
+
         Console.WriteLine("Examples:");
         Console.WriteLine("  devmemory search revision");
         Console.WriteLine("  devmemory search revision --project LogicalCommon");
@@ -44,11 +72,15 @@ public sealed class HelpCommandHandler : ICommandHandler
         Console.WriteLine("  devmemory learn-from-git");
         Console.WriteLine("  devmemory graph-export");
         Console.WriteLine("  devmemory graph-view");
+        Console.WriteLine("  devmemory version");
+        Console.WriteLine("  devmemory --version");
         Console.WriteLine();
+
         Console.WriteLine("Environment variables:");
-        Console.WriteLine("  DEVMEMORY_HOME  Custom DevMemory storage directory");
+        Console.WriteLine("  DEVMEMORY_HOME   Custom DevMemory storage directory");
         Console.WriteLine();
-        Console.WriteLine("Example:");
+
+        Console.WriteLine("Environment example:");
         Console.WriteLine("  DEVMEMORY_HOME=~/devmemory-work devmemory storage");
 
         return CliExitCodes.Success;

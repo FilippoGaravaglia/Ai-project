@@ -4,6 +4,26 @@ namespace DevMemory.Cli.CommandLine;
 
 public static class CommandOptions
 {
+    public static string[] NormalizeCommandAliases(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            return ["help"];
+        }
+
+        if (args.Length == 1 && IsVersionAlias(args[0]))
+        {
+            return ["version"];
+        }
+
+        if (args.Length == 1 && IsHelpAlias(args[0]))
+        {
+            return ["help"];
+        }
+
+        return args;
+    }
+
     public static MemorySearchOptions BuildSearchOptions(string[] args)
     {
         var queryParts = new List<string>();
@@ -90,5 +110,23 @@ public static class CommandOptions
         }
 
         return value;
+    }
+
+    /// <summary>
+    /// Determines whether the provided argument is a global version alias.
+    /// </summary>
+    private static bool IsVersionAlias(string value)
+    {
+        return value.Equals("--version", StringComparison.OrdinalIgnoreCase)
+            || value.Equals("-v", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Determines whether the provided argument is a global help alias.
+    /// </summary>
+    private static bool IsHelpAlias(string value)
+    {
+        return value.Equals("--help", StringComparison.OrdinalIgnoreCase)
+            || value.Equals("-h", StringComparison.OrdinalIgnoreCase);
     }
 }
