@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/DevMemory.Application.Tests/DevMemory.Application.Tests.csproj" />
+    <Project Path="tests/DevMemory.Cli.Tests/DevMemory.Cli.Tests.csproj" />
     <Project Path="tests/DevMemory.Infrastructure.Tests/DevMemory.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>
