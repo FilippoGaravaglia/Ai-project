@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  BUILD_CONFIGURATION: Release
+
+jobs:
+  build-test-pack:
+    name: Build, test and pack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Display .NET information
+        run: dotnet --info
+
+      - name: Restore solution
+        run: dotnet restore DevMemory.slnx
+
+      - name: Build solution
+        run: dotnet build DevMemory.slnx --configuration $BUILD_CONFIGURATION --no-restore
+
+      - name: Run tests
+        run: dotnet test DevMemory.slnx --configuration $BUILD_CONFIGURATION --no-build --verbosity normal
+
+      - name: Pack CLI
+        run: dotnet pack src/DevMemory.Cli/DevMemory.Cli.csproj --configuration $BUILD_CONFIGURATION --no-build --output artifacts/packages
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: devmemory-cli-package
+          path: artifacts/packages/*.nupkg
+          if-no-files-found: error
