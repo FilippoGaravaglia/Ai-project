@@ -10,7 +10,7 @@
     <packageTypes>
       <packageType name="DotnetTool" />
     </packageTypes>
-    <repository type="git" commit="8fc5a325749bbe57e977eb6c98ad3632f0c85348" />
+    <repository type="git" commit="dbdefdded7d2d9c45942701070b4a692c81d444b" />
   </metadata>
   <files>
     <file src="/Users/filippogaravaglia/Downloads/Ai project/src/DevMemory.Cli/obj/Release/net10.0/DotnetToolSettings.xml" target="tools/net10.0/any/DotnetToolSettings.xml" />
