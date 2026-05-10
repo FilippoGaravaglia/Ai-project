@@ -307,9 +307,11 @@ DevMemory.slnx
 │   ├── DevMemory.Application
 │   ├── DevMemory.Infrastructure
 │   └── DevMemory.Cli
-└── tests
-    ├── DevMemory.Application.Tests
-    └── DevMemory.Infrastructure.Tests
+├── tests
+│   ├── DevMemory.Application.Tests
+│   ├── DevMemory.Infrastructure.Tests
+│   └── DevMemory.Cli.Tests
+└── scripts
 ```
 
 ### DevMemory.Core
@@ -391,6 +393,35 @@ git-status
 learn-from-git
 graph-export
 graph-view
+help
+```
+
+The CLI entry point is intentionally kept small and works as a composition root.
+
+Command execution is delegated to dedicated command handlers:
+
+```text
+AddCommandHandler
+ListCommandHandler
+SearchCommandHandler
+ShowCommandHandler
+StorageCommandHandler
+MarkdownCommandHandler
+GitStatusCommandHandler
+LearnFromGitCommandHandler
+GraphExportCommandHandler
+GraphViewCommandHandler
+HelpCommandHandler
+```
+
+Supporting CLI components include:
+
+```text
+CommandDispatcher
+CommandOptions
+CliPrompt
+CliExitCodes
+MemoryConsolePrinter
 ```
 
 ---
@@ -535,6 +566,101 @@ DEVMEMORY_HOME=~/devmemory-work devmemory storage
 
 ---
 
+## Local development scripts
+
+DevMemory includes local development scripts to simplify the build, test, packaging and cleanup workflow.
+
+### Build and test
+
+Run the full build and test pipeline:
+
+```bash
+./scripts/build-test.sh
+```
+
+This script:
+
+- builds the solution;
+- runs the full test suite;
+- fails fast if build or tests fail.
+
+---
+
+### Install as a local global tool
+
+Package and install DevMemory locally as a .NET global tool:
+
+```bash
+./scripts/install-local-tool.sh
+```
+
+This script:
+
+- builds the solution;
+- runs all tests;
+- cleans the local package output directory;
+- creates the NuGet package under `artifacts/packages`;
+- uninstalls any previous local global-tool installation;
+- installs the new package globally;
+- verifies the installation by running:
+
+```bash
+devmemory help
+```
+
+After this step, the CLI is available from anywhere with:
+
+```bash
+devmemory
+```
+
+---
+
+### Clean generated files
+
+Remove local generated files and build artifacts:
+
+```bash
+./scripts/clean-generated.sh
+```
+
+This script removes:
+
+- `bin/`
+- `obj/`
+- `artifacts/`
+- local `devmemory.json` files generated during development
+
+It does not remove the real user storage under:
+
+```text
+~/.devmemory/
+```
+
+---
+
+### Recommended local workflow
+
+Before opening a pull request or creating a release package, run:
+
+```bash
+./scripts/build-test.sh
+```
+
+When testing the CLI as an installed tool, run:
+
+```bash
+./scripts/install-local-tool.sh
+```
+
+When you want to clean the workspace from generated files, run:
+
+```bash
+./scripts/clean-generated.sh
+```
+
+---
+
 ## Testing
 
 Run all tests:
@@ -555,6 +681,8 @@ The current test suite covers:
 - graph generation
 - JSON graph export
 - HTML graph export
+- CLI command option parsing
+- CLI command dispatching
 
 ---
 
@@ -590,6 +718,8 @@ Update the locally installed global tool:
 dotnet tool update --global DevMemory.Cli --add-source ./artifacts/packages
 ```
 
+For the recommended local workflow, prefer using the scripts under `scripts/`.
+
 ---
 
 ## Current limitations
@@ -599,7 +729,6 @@ DevMemory is still under active development.
 Current limitations:
 
 - CLI parsing is currently implemented manually.
-- CLI command handlers are still inside `Program.cs`.
 - Storage is JSON-based.
 - No SQLite storage yet.
 - No LLM integration yet.
@@ -607,6 +736,7 @@ Current limitations:
 - HTML graph layout is simple and static.
 - No published public NuGet package yet.
 - No CI/CD pipeline yet.
+- No automated release workflow yet.
 
 ---
 
@@ -614,16 +744,15 @@ Current limitations:
 
 Planned improvements:
 
-- Refactor CLI into dedicated command handlers.
+- Improve CLI output with tables and cleaner formatting.
 - Add better command parsing with `System.CommandLine` or `Spectre.Console`.
-- Improve CLI output with tables and colors.
-- Add tests for CLI command parsing.
 - Add Git diff summaries for `learn-from-git`.
 - Add optional SQLite storage.
 - Add optional AI provider integration.
 - Improve HTML graph layout and filtering.
 - Add screenshots to the README.
 - Add release scripts and version bump workflow.
+- Add `CHANGELOG.md`.
 - Publish as a public or private NuGet tool package.
 - Add CI pipeline for build and tests.
 
