@@ -29,6 +29,7 @@ var commandHandlers = new ICommandHandler[]
     new LearnFromGitCommandHandler(memoryService, gitMemoryDraftService),
     new GraphExportCommandHandler(memoryGraphService),
     new GraphViewCommandHandler(memoryGraphService),
+    new AiStatusCommandHandler(),
     new VersionCommandHandler(),
     new HelpCommandHandler()
 };

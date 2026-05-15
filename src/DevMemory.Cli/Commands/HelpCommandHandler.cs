@@ -38,6 +38,7 @@ public sealed class HelpCommandHandler : ICommandHandler
         Console.WriteLine("  devmemory learn-from-git [--path <repository-path>]");
         Console.WriteLine("  devmemory graph-export [--output <file-path>]");
         Console.WriteLine("  devmemory graph-view [--output <file-path>]");
+        Console.WriteLine("  dotnet run --project src/DevMemory.Cli -- ai-status");
         Console.WriteLine("  devmemory version");
         Console.WriteLine("  devmemory --version");
         Console.WriteLine("  devmemory -v");
@@ -54,6 +55,7 @@ public sealed class HelpCommandHandler : ICommandHandler
         Console.WriteLine("  learn-from-git   Create a memory draft from Git context.");
         Console.WriteLine("  graph-export     Export the memory graph as JSON.");
         Console.WriteLine("  graph-view       Generate the local HTML graph view.");
+        Console.WriteLine("  ai-status        Show the current AI/RAG runtime configuration status.");
         Console.WriteLine("  version          Show the current DevMemory version.");
         Console.WriteLine("  help             Show this help message.");
         Console.WriteLine();
@@ -72,16 +74,24 @@ public sealed class HelpCommandHandler : ICommandHandler
         Console.WriteLine("  devmemory learn-from-git");
         Console.WriteLine("  devmemory graph-export");
         Console.WriteLine("  devmemory graph-view");
+        Console.WriteLine("  devmemory ai-status");
         Console.WriteLine("  devmemory version");
         Console.WriteLine("  devmemory --version");
         Console.WriteLine();
 
         Console.WriteLine("Environment variables:");
-        Console.WriteLine("  DEVMEMORY_HOME   Custom DevMemory storage directory");
+        Console.WriteLine("  DEVMEMORY_HOME                       Custom DevMemory storage directory");
+        Console.WriteLine("  DEVMEMORY_CHAT_PROVIDER              Chat provider: none, ollama, openai, gemini, anthropic");
+        Console.WriteLine("  DEVMEMORY_EMBEDDING_PROVIDER         Embedding provider: none, ollama, openai, gemini");
+        Console.WriteLine("  DEVMEMORY_VECTOR_STORE               Vector store: none, qdrant");
+        Console.WriteLine("  DEVMEMORY_OLLAMA_ENDPOINT            Ollama endpoint");
+        Console.WriteLine("  DEVMEMORY_QDRANT_ENDPOINT            Qdrant endpoint");
+        Console.WriteLine("  DEVMEMORY_QDRANT_COLLECTION          Qdrant collection name");
         Console.WriteLine();
-
-        Console.WriteLine("Environment example:");
+        
+        Console.WriteLine("Environment examples:");
         Console.WriteLine("  DEVMEMORY_HOME=~/devmemory-work devmemory storage");
+        Console.WriteLine("  DEVMEMORY_CHAT_PROVIDER=ollama devmemory ai-status");
 
         return CliExitCodes.Success;
     }
